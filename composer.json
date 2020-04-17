@@ -1,5 +1,5 @@
 {
-    "name": "phper666/jwt-auth",
+    "name": "motian/jwt-auth",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -11,6 +11,12 @@
             "name": "Li Yuzhao",
             "email": "562405704@qq.com",
             "homepage": "https://github.com/phper666/jwt-auth",
+            "role": "Developer"
+        },
+        {
+            "name": "Wence Xie",
+            "email": "wence.xie@gmail.com",
+            "homepage": "https://github.com/motian/jwt-auth",
             "role": "Developer"
         }
     ],
