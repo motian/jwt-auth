@@ -8,9 +8,6 @@
 namespace Phper666\JwtAuth\Middleware;
 
 use Hyperf\HttpServer\Contract\ResponseInterface as HttpResponse;
-use Hyperf\Utils\Context;
-use Library\Utils\Exception\JwtTokenException;
-use Phper666\JwtAuth\Exception\JWTException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -25,6 +22,8 @@ class JwtAuthMiddleware implements MiddlewareInterface
      */
     protected $response;
 
+    protected $prefix = 'Bearer';
+
     protected $jwt;
 
     public function __construct(HttpResponse $response, Jwt $jwt)
@@ -35,29 +34,21 @@ class JwtAuthMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        try {
-            $token = $this->jwt->retrieveToken();
-            if ($this->jwt->checkToken($token, false)) {
-                // validate会对exp进行校验，过期抛异常，此处忽略校验（也可以通过重写getParser()修改行为）
-                if ($this->jwt->isExpired()) {
-                    if (!$this->jwt->canRefresh()) {
-                        throw new JWTException('Token is expired!', 403);
-                    }
-
-                    $token = $this->jwt->refreshToken(true);
-                } else {
-                    $token = $this->jwt->refreshToken(true);
-                }
-                Context::set('jwtToken', $token);
+        $isValidToken = false;
+        // 根据具体业务判断逻辑走向，这里假设用户携带的token有效
+        $token = $request->getHeader('Authorization')[0] ?? '';
+        if (strlen($token) > 0) {
+            $token = ucfirst($token);
+            $arr = explode($this->prefix . ' ', $token);
+            $token = $arr[1] ?? '';
+            if (strlen($token) > 0 && $this->jwt->checkToken()) {
+                $isValidToken = true;
             }
-        } catch (TokenValidException | JWTException  $e) {
-            // 无效token的处理，example
-            return $this->response->json([
-                'status' => 0,
-                'msg' => 'token is invalid!',
-            ]);
+        }
+        if ($isValidToken) {
+            return $handler->handle($request);
         }
 
-        return $handler->handle($request);
+        throw new TokenValidException('Token authentication does not pass', 401);
     }
 }

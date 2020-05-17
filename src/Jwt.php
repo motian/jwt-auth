@@ -121,7 +121,7 @@ class Jwt
      */
     public function refreshToken($withPrefix = false)
     {
-        if (!$this->retrieveToken($withPrefix)) {
+        if (! $this->retrieveToken($withPrefix)) {
             throw new JWTException('A token is required', 400);
         }
         $claims = $this->blacklist->add($this->getTokenObj());
@@ -158,7 +158,7 @@ class Jwt
      */
     public function logout(string $token = null)
     {
-        if (!is_null($token) && $token !== '') {
+        if (! is_null($token) && $token !== '') {
             $token = $this->handleToken($token);
         } else {
             $token = $this->retrieveToken();
@@ -212,7 +212,7 @@ class Jwt
      */
     public function getTokenObj(string $token = null)
     {
-        if (!is_null($token) && $token !== '') {
+        if (! is_null($token) && $token !== '') {
             return $this->getParser()->parse($token);
         }
 
