@@ -58,17 +58,17 @@ trait CommonTrait
     ];
 
     /**
-     * @Value("token.prefix")
+     * @Value("jwt.token.prefix")
      */
     public $prefix;
 
     /**
-     * @Value("token.name")
+     * @Value("jwt.token.name")
      */
     public $tokenName;
 
     /**
-     * @Value("token.position")
+     * @Value("jwt.token.position")
      */
     public $tokenPosition;
 
@@ -224,7 +224,7 @@ trait CommonTrait
      */
     public function getHeaderToken()
     {
-        $token = $this->request->getHeader('Authorization')[0] ?? '';
+        $token = $this->request->header('Authorization', '');
         $token = $this->handleHeaderToken($token);
         if ($token !== false) {
             return $token;
@@ -242,9 +242,9 @@ trait CommonTrait
     public function retrieveToken($withPrefix = false)
     {
         if (strtolower($this->tokenPosition) === 'header') {
-            $token = $this->request->getHeader($this->tokenName)[0] ?? '';
+            $token = $this->request->header($this->tokenName, '');
         } else {
-            $token = $this->request->query($this->tokenName);
+            $token = $this->request->query($this->tokenName, '');
         }
 
         $tokenWithoutPrefix = $this->handleToken($token);
