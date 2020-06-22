@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTest\Cases;
 
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\Container;
 use Hyperf\Utils\ApplicationContext;
 use Mockery;
@@ -24,9 +25,11 @@ use Phper666\JwtAuth\Jwt;
  */
 class JwtConfigTest extends AbstractTestCase
 {
-    public function testExample()
+    public function testJwt()
     {
+        /** @var Jwt $jwt*/
         $jwt = $this->getContainer()->get(Jwt::class);
+        $this->assertNull($jwt->getPrefix());
         $jwt->setPrefix('prefix');
 
         $this->assertEquals('prefix', $jwt->getPrefix());
@@ -36,10 +39,13 @@ class JwtConfigTest extends AbstractTestCase
     protected function getContainer()
     {
         $container = Mockery::mock(Container::class);
+        $config = Mockery::mock(ConfigInterface::class);
+        $config->shouldReceive('get')->andReturnNull();
         ApplicationContext::setContainer($container);
 
         $blacklist = new Blacklist();
         $container->shouldReceive('get')->with(Jwt::class)->andReturn(new Jwt($blacklist));
+        $container->shouldReceive('get')->with(ConfigInterface::class)->andReturn($config);
 
         return $container;
     }
