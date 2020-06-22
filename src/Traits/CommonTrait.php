@@ -8,21 +8,41 @@
 namespace Phper666\JwtAuth\Traits;
 
 use Hyperf\Config\Annotation\Value;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Contract\RequestInterface;
-use Phper666\JwtAuth\Exception\JWTException;
-use Psr\SimpleCache\CacheInterface;
+use Hyperf\Utils\ApplicationContext;
+use Hyperf\Utils\Arr;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Claim\Factory as ClaimFactory;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Parsing\Decoder;
 use Lcobucci\JWT\Parsing\Encoder;
-use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer;
-use Lcobucci\JWT\ValidationData;
+use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Token;
+use Lcobucci\JWT\ValidationData;
+use Phper666\JwtAuth\Exception\JWTException;
 use Phper666\JwtAuth\Exception\TokenValidException;
+use Psr\SimpleCache\CacheInterface;
 
+/**
+ * Trait CommonTrait
+ * @property $prefix
+ * @property $tokenName
+ * @property $tokenPosition
+ * @property $secret
+ * @property $keys
+ * @property $ttl
+ * @property $refreshTtl
+ * @property $alg
+ * @property $loginType
+ * @property $ssoKey
+ * @property $cacheTTL
+ * @property $gracePeriod
+ * @property $enabled
+ * @property RequestInterface $request
+ * @property CacheInterface $storage
+ * @package Phper666\JwtAuth\Traits
+ */
 trait CommonTrait
 {
     /**
@@ -56,83 +76,6 @@ trait CommonTrait
         'ES384',
         'ES512',
     ];
-
-    /**
-     * @Value("jwt.token.prefix")
-     */
-    public $prefix;
-
-    /**
-     * @Value("jwt.token.name")
-     */
-    public $tokenName;
-
-    /**
-     * @Value("jwt.token.position")
-     */
-    public $tokenPosition;
-
-    /**
-     * @Inject
-     * @var RequestInterface
-     */
-    public $request;
-
-    /**
-     * @Inject
-     * @var CacheInterface
-     */
-    public $storage;
-
-    /**
-     * @Value("jwt.secret")
-     */
-    public $secret;
-
-    /**
-     * @Value("jwt.keys")
-     */
-    public $keys;
-
-    /**
-     * @Value("jwt.ttl")
-     */
-    public $ttl;
-
-    /**
-     * @Value("jwt.refresh_ttl")
-     */
-    public $refreshTtl;
-
-    /**
-     * @Value("jwt.alg")
-     */
-    public $alg;
-
-    /**
-     * @Value("jwt.login_type")
-     */
-    public $loginType = 'mpop';
-
-    /**
-     * @Value("jwt.sso_key")
-     */
-    public $ssoKey = 'uid';
-
-    /**
-     * @Value("jwt.blacklist_cache_ttl")
-     */
-    public $cacheTTL = 86400;
-
-    /**
-     * @Value("jwt.blacklist_grace_period")
-     */
-    public $gracePeriod = 0;
-
-    /**
-     * @Value("jwt.blacklist_enabled")
-     */
-    public $enalbed = true;
 
     /**
      * @param Encoder|null $encoder
@@ -246,7 +189,6 @@ trait CommonTrait
         } else {
             $token = $this->request->query($this->tokenName, '');
         }
-
         $tokenWithoutPrefix = $this->handleToken($token);
 
         if ($tokenWithoutPrefix === false) {
@@ -476,8 +418,36 @@ trait CommonTrait
         return $this;
     }
 
-    public function __get($name)
+    public function __get($property)
     {
-        return $this->$name;
+        $propertyMap = [
+            'prefix' => 'jwt.token.prefix',
+            'tokenName' => 'jwt.token.name',
+            'tokenPosition' => 'jwt.token.position',
+            'secret' => 'jwt.secret',
+            'keys' => 'jwt.keys',
+            'ttl' => 'jwt.ttl',
+            'refreshTtl' => 'jwt.refresh_ttl',
+            'alg' => 'jwt.alg',
+            'loginType' => 'jwt.login_type',
+            'ssoKey' => 'jwt.sso_key',
+            'cacheTTL' => 'jwt.blacklist_cache_ttl',
+            'gracePeriod' => 'jwt.blacklist_grace_period',
+            'enalbed' => 'jwt.blacklist_enabled',
+        ];
+
+        if ($configKey = Arr::get($propertyMap, $property)) {
+            return config($configKey);
+        }
+
+        if ($property === 'request') {
+            return ApplicationContext::getContainer()->get(RequestInterface::class);
+        }
+
+        if ($property === 'storage') {
+            return ApplicationContext::getContainer()->get(CacheInterface::class);
+        }
+
+        return null;
     }
 }
