@@ -91,6 +91,11 @@ class Jwt
             $builder = $builder->withClaim($k, $v); // 自定义数据
         }
 
+        if ($this->refreshTtl > 0) {
+            $builder = $builder->withClaim('refresh_ttl', $this->refreshTtl)
+                ->withClaim('refresh_exp', time() + $this->refreshTtl);
+        }
+
         $token = $builder->getToken($signer, $this->getKey()); // Retrieves the generated token
 
         if ($this->loginType == 'sso' && $isInsertSsoBlack) { // 单点登录要把所有的以前生成的token都失效
