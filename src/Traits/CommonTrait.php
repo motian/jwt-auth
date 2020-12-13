@@ -81,23 +81,23 @@ trait CommonTrait
 
     /**
      * @param Encoder|null $encoder
-     * @param ClaimFactory|null $claimFactory
      * @return Builder
      * @see [[Lcobucci\JWT\Builder::__construct()]]
      */
-    public function getBuilder(Encoder $encoder = null, ClaimFactory $claimFactory = null)
+    public function getBuilder(Encoder $encoder = null)
     {
+        $claimFactory = $this->refreshTtl > 0 ? new ClaimFactory(['exp' => null]) : null;
         return new Builder($encoder, $claimFactory);
     }
 
     /**
      * @param Decoder|null $decoder
-     * @param ClaimFactory|null $claimFactory
      * @return Parser
      * @see [[Lcobucci\JWT\Parser::__construct()]]
      */
-    public function getParser(Decoder $decoder = null, ClaimFactory $claimFactory = null)
+    public function getParser(Decoder $decoder = null)
     {
+        $claimFactory = $this->refreshTtl > 0 ? new ClaimFactory(['exp' => null]) : null;
         return new Parser($decoder, $claimFactory);
     }
 
