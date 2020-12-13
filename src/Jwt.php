@@ -121,7 +121,7 @@ class Jwt
      * 刷新token
      *
      * @param bool $withPrefix
-     * @return Token
+     * @return string
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function refreshToken($withPrefix = false)
@@ -149,7 +149,7 @@ class Jwt
             unset($claims['jti']);
         }
 
-        $newToken = $this->generateToken($claims);
+        $newToken = strval($this->generateToken($claims));
 
         return $withPrefix ? $this->prefix . ' ' . $newToken : $newToken;
     }
